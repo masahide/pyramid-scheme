@@ -9,7 +9,6 @@ import (
 	"strconv"
 )
 
-
 // Job stats
 const (
 	Queued    = iota // 0
@@ -47,7 +46,25 @@ func (this *PyramidScheme) GetHosts(id int) ([]Host, error) {
 	return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
 }
 
-func (this *PyramidScheme) GetHostsRest(w *rest.ResponseWriter, req *rest.Request) {
+func (this *PyramidScheme) NextHosts(id int) ([]Host, error) {
+	if len(this.jobs) > id {
+		return this.jobs[id].Hosts, nil
+	}
+	return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
+}
+
+func (this *PyramidScheme) PostJob(hostList *HostList) int {
+	hosts := []Host{}
+	for _, name := range hostList.Name {
+		hosts = append(hosts, Host{name, Queued, 0, ""})
+	}
+	job := Job{hostList.Pcode, hosts}
+	this.jobs = append(this.jobs, job)
+	return len(this.jobs) - 1
+}
+
+// GetHosts handler
+func (this *PyramidScheme) GetHostsHandler(w *rest.ResponseWriter, req *rest.Request) {
 	id, _ := strconv.Atoi(req.PathParam("id"))
 	if job, err := this.GetHosts(id); err == nil {
 		w.WriteJson(&job)
@@ -56,32 +73,23 @@ func (this *PyramidScheme) GetHostsRest(w *rest.ResponseWriter, req *rest.Reques
 	}
 }
 
-func (this *PyramidScheme) PostJob(hostlist *HostList) int {
-	hosts := []Host{}
-	for _, name := range hostlist.Name {
-		hosts = append(hosts, Host{name, Queued, 0, ""})
-	}
-	job := Job{hostlist.Pcode, hosts}
-	this.jobs = append(this.jobs, job)
-	return len(this.jobs)-1
-}
-
-func (this *PyramidScheme) PostJobRest(w *rest.ResponseWriter, r *rest.Request) {
-	hostlist := HostList{}
-	err := r.DecodeJsonPayload(&hostlist)
+// PostJob handler
+func (this *PyramidScheme) PostJobHandler(w *rest.ResponseWriter, r *rest.Request) {
+	hostList := HostList{}
+	err := r.DecodeJsonPayload(&hostList)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteJson(this.PostJob(&hostlist))
+	w.WriteJson(this.PostJob(&hostList))
 }
 
 func main() {
 	ps := PyramidScheme{}
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.Route{"POST", "/jobs", ps.PostJobRest},
-		rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsRest},
+		rest.Route{"POST", "/jobs", ps.PostJobHandler},
+		rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsHandler},
 	)
 	log.Fatal(http.ListenAndServe(":8000", &handler))
 }
