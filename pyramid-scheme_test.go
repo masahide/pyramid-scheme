@@ -53,4 +53,25 @@ func TestNextHosts(t *testing.T) {
 		t.Errorf("hosts=%v", hosts)
 	}
 
+	result, _ = ps.NextHosts(jobId)
+	result, _ = ps.NextHosts(jobId)
+	if len(result) != 1 {
+		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), 1)
+	}
+	hosts, _ = ps.GetHosts(jobId)
+	i = 0
+	for _, host := range hosts {
+		if host.Status == Initalizing {
+			i++
+		}
+	}
+	if i != 7 {
+		t.Errorf("i = %v, want %v", i, 7)
+		t.Errorf("hosts=%v", hosts)
+	}
+	result, _ = ps.NextHosts(jobId)
+	if len(result) != 0 {
+		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), 0)
+	}
+
 }
