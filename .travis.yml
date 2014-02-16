@@ -1,3 +1,2 @@
 language: go
-"github.com/ant0ine/go-json-rest"
 script: go get && go test
