@@ -2,6 +2,8 @@ language: go
 
 go:
   - 1.2
-  - tip
+#  - tip
 
-script: go test
+script: go test -v
+
+# vim:set sw=2 ts=2:
