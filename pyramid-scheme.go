@@ -9,14 +9,17 @@ import (
 	"strconv"
 )
 
-// Job stats
+// Job status
 const (
-	Queued    = iota // 0
-	Running          // 1
-	Finished         // 2
-	Failed           // 3
-	Cancelled        // 4
+	Queued      = iota // 0
+	Initalizing        // 1
+	Running            // 2
+	Finished           // 3
+	Failed             // 4
+	Cancelled          // 5
 )
+
+const NextHostNum = 3
 
 type Host struct {
 	Name       string
@@ -48,7 +51,18 @@ func (this *PyramidScheme) GetHosts(id int) ([]Host, error) {
 
 func (this *PyramidScheme) NextHosts(id int) ([]Host, error) {
 	if len(this.jobs) > id {
-		return this.jobs[id].Hosts, nil
+
+		hosts := []Host{}
+		for index, host := range this.jobs[id].Hosts {
+			if host.Status == Queued {
+				this.jobs[id].Hosts[index].Status = Initalizing
+				hosts = append(hosts, host)
+				if len(hosts) >= NextHostNum {
+					break
+				}
+			}
+		}
+		return hosts, nil
 	}
 	return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
 }
