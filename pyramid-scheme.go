@@ -9,11 +9,21 @@ import (
 	"strconv"
 )
 
+
+// Job stats
+const (
+	Queued    = iota // 0
+	Running          // 1
+	Finished         // 2
+	Failed           // 3
+	Cancelled        // 4
+)
+
 type Host struct {
-	Name    string
-	Status  int
-	Result  int
-	Message string
+	Name       string
+	Status     int
+	ReturnCode int
+	Message    string
 }
 
 type Job struct {
@@ -30,9 +40,9 @@ type PyramidScheme struct {
 	jobs []Job
 }
 
-func (this *PyramidScheme) GetHosts(id int) (*[]Host, error) {
+func (this *PyramidScheme) GetHosts(id int) ([]Host, error) {
 	if len(this.jobs) > id {
-		return &this.jobs[id].Hosts, nil
+		return this.jobs[id].Hosts, nil
 	}
 	return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
 }
@@ -40,20 +50,20 @@ func (this *PyramidScheme) GetHosts(id int) (*[]Host, error) {
 func (this *PyramidScheme) GetHostsRest(w *rest.ResponseWriter, req *rest.Request) {
 	id, _ := strconv.Atoi(req.PathParam("id"))
 	if job, err := this.GetHosts(id); err == nil {
-		w.WriteJson(job)
+		w.WriteJson(&job)
 	} else {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (this *PyramidScheme) PostJob(hostlist *HostList) *Job {
+func (this *PyramidScheme) PostJob(hostlist *HostList) int {
 	hosts := []Host{}
 	for _, name := range hostlist.Name {
-		hosts = append(hosts, Host{name, 0, 0, ""})
+		hosts = append(hosts, Host{name, Queued, 0, ""})
 	}
 	job := Job{hostlist.Pcode, hosts}
 	this.jobs = append(this.jobs, job)
-	return &job
+	return len(this.jobs)-1
 }
 
 func (this *PyramidScheme) PostJobRest(w *rest.ResponseWriter, r *rest.Request) {
@@ -63,8 +73,7 @@ func (this *PyramidScheme) PostJobRest(w *rest.ResponseWriter, r *rest.Request) 
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	var job = this.PostJob(&hostlist)
-	w.WriteJson(job)
+	w.WriteJson(this.PostJob(&hostlist))
 }
 
 func main() {
