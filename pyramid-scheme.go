@@ -70,7 +70,7 @@ func (this *PyramidScheme) PostJobRest(w *rest.ResponseWriter, r *rest.Request) 
 }
 
 func main() {
-	var ps = PyramidScheme{}
+	ps := PyramidScheme{}
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
 		rest.Route{"POST", "/jobs", ps.PostJobRest},
