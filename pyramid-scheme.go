@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
-	//"io/ioutil"
-	//"os"
 	"errors"
+	"fmt"
 	"github.com/ant0ine/go-json-rest"
 	"log"
 	"net/http"
