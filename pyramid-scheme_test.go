@@ -1,11 +1,20 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestAdd(t *testing.T) {
-	const n, m = 3, 3
-	const out = 6
-	if x := Add(n, m); x != out {
-		t.Errorf("Add(%v, %v) = %v, want %v", n, m, x, out)
+func TestGetHostsAndPostJob(t *testing.T) {
+	const host1 = "a"
+	const host2 = "b"
+	var hostlist = HostList{"p_code", []string{host1,host2}}
+	var ps = PyramidScheme{}
+	
+	if job := ps.PostJob(&hostlist); job.Hosts[0].Name != host1 {
+		t.Errorf("GetHosts(%v) = %+v, want %v", hostlist, job, host1)
+	}
+	if job := ps.PostJob(&hostlist); job.Hosts[1].Name != host2 {
+		t.Errorf("GetHosts(%v) = %+v, want %v", hostlist, job, host2)
 	}
 }
+
