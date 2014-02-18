@@ -19,7 +19,9 @@ const (
 	Cancelled          // 5
 )
 
-const NextHostNum = 3
+const (
+	NextHostNum = 3 //
+)
 
 type Host struct {
 	Name       string
@@ -43,28 +45,41 @@ type PyramidScheme struct {
 }
 
 func (this *PyramidScheme) GetHosts(id int) ([]Host, error) {
-	if len(this.jobs) > id {
-		return this.jobs[id].Hosts, nil
+	if len(this.jobs) <= id {
+		return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
 	}
-	return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
+	return this.jobs[id].Hosts, nil
 }
 
 func (this *PyramidScheme) NextHosts(id int) ([]Host, error) {
-	if len(this.jobs) > id {
-
-		hosts := []Host{}
-		for index, host := range this.jobs[id].Hosts {
-			if host.Status == Queued {
-				this.jobs[id].Hosts[index].Status = Initalizing
-				hosts = append(hosts, host)
-				if len(hosts) >= NextHostNum {
-					break
-				}
+	if len(this.jobs) <= id {
+		return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
+	}
+	hosts := []Host{}
+	for index, host := range this.jobs[id].Hosts {
+		if host.Status == Queued {
+			this.jobs[id].Hosts[index].Status = Initalizing
+			hosts = append(hosts, host)
+			if len(hosts) >= NextHostNum {
+				break
 			}
 		}
-		return hosts, nil
 	}
-	return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
+	return hosts, nil
+}
+
+func (this *PyramidScheme) UpdateHost(jobId int, host Host) error {
+	if len(this.jobs) <= jobId {
+		return errors.New(fmt.Sprintf("ID that does not exist. max jobId is %+v", len(this.jobs)))
+	}
+	for hostId, h := range this.jobs[jobId].Hosts {
+		if h.Name == host.Name {
+			this.jobs[jobId].Hosts[hostId] = host
+			return nil
+		}
+	}
+	return errors.New(fmt.Sprintf("Host can not be found is %+v", host.Name))
+
 }
 
 func (this *PyramidScheme) PostJob(hostList *HostList) int {
@@ -75,16 +90,6 @@ func (this *PyramidScheme) PostJob(hostList *HostList) int {
 	job := Job{hostList.Pcode, hosts}
 	this.jobs = append(this.jobs, job)
 	return len(this.jobs) - 1
-}
-
-// GetHosts handler
-func (this *PyramidScheme) GetHostsHandler(w *rest.ResponseWriter, req *rest.Request) {
-	id, _ := strconv.Atoi(req.PathParam("id"))
-	if job, err := this.GetHosts(id); err == nil {
-		w.WriteJson(&job)
-	} else {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	}
 }
 
 // PostJob handler
@@ -98,12 +103,33 @@ func (this *PyramidScheme) PostJobHandler(w *rest.ResponseWriter, r *rest.Reques
 	w.WriteJson(this.PostJob(&hostList))
 }
 
+// GetHosts handler
+func (this *PyramidScheme) GetHostsHandler(w *rest.ResponseWriter, req *rest.Request) {
+	id, _ := strconv.Atoi(req.PathParam("id"))
+	if job, err := this.GetHosts(id); err == nil {
+		w.WriteJson(&job)
+	} else {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// NextHosts handler
+func (this *PyramidScheme) PutNextHostsHandler(w *rest.ResponseWriter, req *rest.Request) {
+	id, _ := strconv.Atoi(req.PathParam("id"))
+	if job, err := this.NextHosts(id); err == nil {
+		w.WriteJson(&job)
+	} else {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 	ps := PyramidScheme{}
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
 		rest.Route{"POST", "/jobs", ps.PostJobHandler},
 		rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsHandler},
+		rest.Route{"PUT", "/jobs/:id/nexthosts", ps.PutNextHostsHandler},
 	)
 	log.Fatal(http.ListenAndServe(":8000", &handler))
 }

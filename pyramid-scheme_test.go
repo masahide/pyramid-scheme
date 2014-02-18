@@ -75,3 +75,24 @@ func TestNextHosts(t *testing.T) {
 	}
 
 }
+
+func TestUpdateHosts(t *testing.T) {
+	allHosts := []string{"a", "b", "c", "d", "e", "f", "g"}
+	var hostList = HostList{"p_code", allHosts}
+	var ps = PyramidScheme{}
+	jobId := ps.PostJob(&hostList)
+	result, _ := ps.NextHosts(jobId)
+	result[0].Status = Finished
+	result[0].ReturnCode = 3
+	result[0].Message = "hoge"
+
+	if err := ps.UpdateHost(jobId, result[0]); err != nil {
+		t.Errorf("UpdateHost(%v,%+v) = %+v, want %v", jobId, result[0], err, 0)
+		t.Errorf("allHosts=%v", allHosts)
+	}
+	hosts, _ := ps.GetHosts(jobId)
+	if hosts[0].ReturnCode != 3 {
+		t.Errorf("GetHosts(%v) = %+v, want %v", jobId, hosts[0].ReturnCode, 3)
+		t.Errorf("hosts=%v", hosts)
+	}
+}
