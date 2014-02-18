@@ -89,13 +89,13 @@ func (this *PyramidScheme) PostJob(hostList *HostList) int {
 	}
 	job := Job{hostList.Pcode, hosts}
 	this.jobs = append(this.jobs, job)
-	return len(this.jobs) - 1
+	return len(this.jobs) - 1 //jobId
 }
 
 // PostJob handler
-func (this *PyramidScheme) PostJobHandler(w *rest.ResponseWriter, r *rest.Request) {
+func (this *PyramidScheme) PostJobHandler(w *rest.ResponseWriter, req *rest.Request) {
 	hostList := HostList{}
-	err := r.DecodeJsonPayload(&hostList)
+	err := req.DecodeJsonPayload(&hostList)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -123,6 +123,20 @@ func (this *PyramidScheme) PutNextHostsHandler(w *rest.ResponseWriter, req *rest
 	}
 }
 
+// UpdateHost handler
+func (this *PyramidScheme) PutUpdateHostHandler(w *rest.ResponseWriter, req *rest.Request) {
+	id, _ := strconv.Atoi(req.PathParam("id"))
+	host := Host{}
+	err := req.DecodeJsonPayload(&host)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := this.UpdateHost(id, host); err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 	ps := PyramidScheme{}
 	handler := rest.ResourceHandler{}
@@ -130,6 +144,7 @@ func main() {
 		rest.Route{"POST", "/jobs", ps.PostJobHandler},
 		rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsHandler},
 		rest.Route{"PUT", "/jobs/:id/nexthosts", ps.PutNextHostsHandler},
+		rest.Route{"PUT", "/jobs/:id/updatehost/", ps.PutUpdateHostHandler},
 	)
 	log.Fatal(http.ListenAndServe(":8000", &handler))
 }
