@@ -4,6 +4,11 @@ go:
   - 1.2
 #  - tip
 
-script: go test -v
+
+install: true
+
+script: 
+  - make test
+  - make
 
 # vim:set sw=2 ts=2:
