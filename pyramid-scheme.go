@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ant0ine/go-json-rest"
+	"github.com/masahide/pyramid-scheme/version"
 	"log"
 	"net/http"
 	"strconv"
+	"flag"
+	"os"
 )
 
 // Job status
@@ -22,6 +25,8 @@ const (
 const (
 	NextHostNum = 3 //
 )
+
+const name = "pyramid-scheme"
 
 type Host struct {
 	Name       string
@@ -42,6 +47,18 @@ type HostList struct {
 
 type PyramidScheme struct {
 	jobs []Job
+	version bool
+}
+
+func showVersion() string {
+	return fmt.Sprintf("%s version: %v-%v", name, version.VERSION, version.GITCOMMIT)
+}
+
+func usage() {
+	fmt.Printf("%s\n", showVersion())
+	fmt.Fprintf(os.Stderr, "usage: %s [flags ...]\n", name)
+	flag.PrintDefaults()
+	os.Exit(2)
 }
 
 func (this *PyramidScheme) GetHosts(id int) ([]Host, error) {
@@ -139,6 +156,24 @@ func (this *PyramidScheme) PutUpdateHostHandler(w *rest.ResponseWriter, req *res
 
 func main() {
 	ps := PyramidScheme{}
+	/*
+	flag.StringVar(&co.fileName, "f", "config.yml", "config file")
+	flag.BoolVar(&co.monitorMode, "m", false, "Monitor mode")
+	flag.BoolVar(&co.saveConfig, "save-config-kvs", false, "Save the config to kvs")
+	flag.BoolVar(&co.loadConfig, "load-config-kvs", false, "load the config form kvs")
+	flag.BoolVar(&co.cacheMode, "c", false, "cache mode")
+	flag.BoolVar(&co.statusChangeCheckMode, "s", false, "status change check and mail mode")
+	flag.BoolVar(&co.dryRun, "dryrun", false, "dryrun mode")
+	flag.IntVar(&co.sleepTime, "t", 30, "sleep time(Sec)")
+	*/
+	flag.BoolVar(&ps.version, "v", false, "show version")
+	flag.Usage = usage
+	flag.Parse()
+
+	if ps.version {
+		fmt.Printf("%s\n", showVersion())
+		return
+	}
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
 		rest.Route{"POST", "/jobs", ps.PostJobHandler},
