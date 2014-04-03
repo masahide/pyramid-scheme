@@ -9,7 +9,7 @@ binary: get build
 get:
 	go get ./...
 
-test: 
+test: get 
 	go test -v 
 
 build: 

@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/ant0ine/go-json-rest"
+	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/masahide/pyramid-scheme/version"
 	"log"
 	"net/http"
@@ -110,7 +110,7 @@ func (this *PyramidScheme) PostJob(hostList *HostList) int {
 }
 
 // PostJob handler
-func (this *PyramidScheme) PostJobHandler(w *rest.ResponseWriter, req *rest.Request) {
+func (this *PyramidScheme) PostJobHandler(w rest.ResponseWriter, req *rest.Request) {
 	hostList := HostList{}
 	err := req.DecodeJsonPayload(&hostList)
 	if err != nil {
@@ -121,7 +121,7 @@ func (this *PyramidScheme) PostJobHandler(w *rest.ResponseWriter, req *rest.Requ
 }
 
 // GetHosts handler
-func (this *PyramidScheme) GetHostsHandler(w *rest.ResponseWriter, req *rest.Request) {
+func (this *PyramidScheme) GetHostsHandler(w rest.ResponseWriter, req *rest.Request) {
 	id, _ := strconv.Atoi(req.PathParam("id"))
 	if job, err := this.GetHosts(id); err == nil {
 		w.WriteJson(&job)
@@ -131,7 +131,7 @@ func (this *PyramidScheme) GetHostsHandler(w *rest.ResponseWriter, req *rest.Req
 }
 
 // NextHosts handler
-func (this *PyramidScheme) PutNextHostsHandler(w *rest.ResponseWriter, req *rest.Request) {
+func (this *PyramidScheme) PutNextHostsHandler(w rest.ResponseWriter, req *rest.Request) {
 	id, _ := strconv.Atoi(req.PathParam("id"))
 	if job, err := this.NextHosts(id); err == nil {
 		w.WriteJson(&job)
@@ -141,7 +141,7 @@ func (this *PyramidScheme) PutNextHostsHandler(w *rest.ResponseWriter, req *rest
 }
 
 // UpdateHost handler
-func (this *PyramidScheme) PutUpdateHostHandler(w *rest.ResponseWriter, req *rest.Request) {
+func (this *PyramidScheme) PutUpdateHostHandler(w rest.ResponseWriter, req *rest.Request) {
 	id, _ := strconv.Atoi(req.PathParam("id"))
 	host := Host{}
 	err := req.DecodeJsonPayload(&host)
@@ -176,10 +176,10 @@ func main() {
 	}
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.Route{"POST", "/jobs", ps.PostJobHandler},
-		rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsHandler},
-		rest.Route{"PUT", "/jobs/:id/nexthosts", ps.PutNextHostsHandler},
-		rest.Route{"PUT", "/jobs/:id/updatehost/", ps.PutUpdateHostHandler},
+		&rest.Route{"POST", "/jobs", ps.PostJobHandler},
+		&rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsHandler},
+		&rest.Route{"PUT", "/jobs/:id/nexthosts", ps.PutNextHostsHandler},
+		&rest.Route{"PUT", "/jobs/:id/updatehost/", ps.PutUpdateHostHandler},
 	)
 	log.Fatal(http.ListenAndServe(":8000", &handler))
 }
