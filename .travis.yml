@@ -5,7 +5,7 @@ go:
 #  - tip
 
 
-install: true
+#install: true
 
 script: 
   - make test
