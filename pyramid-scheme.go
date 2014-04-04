@@ -2,14 +2,14 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/masahide/pyramid-scheme/version"
 	"log"
 	"net/http"
-	"strconv"
-	"flag"
 	"os"
+	"strconv"
 )
 
 // Job status
@@ -46,7 +46,7 @@ type HostList struct {
 }
 
 type PyramidScheme struct {
-	jobs []Job
+	jobs    []Job
 	version bool
 }
 
@@ -157,14 +157,8 @@ func (this *PyramidScheme) PutUpdateHostHandler(w rest.ResponseWriter, req *rest
 func main() {
 	ps := PyramidScheme{}
 	/*
-	flag.StringVar(&co.fileName, "f", "config.yml", "config file")
-	flag.BoolVar(&co.monitorMode, "m", false, "Monitor mode")
-	flag.BoolVar(&co.saveConfig, "save-config-kvs", false, "Save the config to kvs")
-	flag.BoolVar(&co.loadConfig, "load-config-kvs", false, "load the config form kvs")
-	flag.BoolVar(&co.cacheMode, "c", false, "cache mode")
-	flag.BoolVar(&co.statusChangeCheckMode, "s", false, "status change check and mail mode")
-	flag.BoolVar(&co.dryRun, "dryrun", false, "dryrun mode")
-	flag.IntVar(&co.sleepTime, "t", 30, "sleep time(Sec)")
+		flag.StringVar(&co.fileName, "f", "config.yml", "config file")
+		flag.IntVar(&co.sleepTime, "t", 30, "sleep time(Sec)")
 	*/
 	flag.BoolVar(&ps.version, "v", false, "show version")
 	flag.Usage = usage
