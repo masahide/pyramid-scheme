@@ -134,6 +134,7 @@ func (this *PyramidScheme) PutUpdateHostHandler(w *rest.ResponseWriter, req *res
 	}
 	if err := this.UpdateHost(id, host); err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
