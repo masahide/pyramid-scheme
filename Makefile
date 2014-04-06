@@ -10,7 +10,7 @@ get:
 	go get ./...
 
 test: get 
-	go test -v 
+	go test ./... -v 
 
 build: 
 	hack/make.sh
