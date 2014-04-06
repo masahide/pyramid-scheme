@@ -30,6 +30,10 @@ func usage() {
 	os.Exit(2)
 }
 
+/**
+ * postjob handler
+ * post payload example: { "Pcode" : "hogeproject", "Name" : [ "host01", "host02", "host03", "host04" ] }
+ */
 // PostJob handler
 func (this *PyramidScheme) PostJobHandler(w rest.ResponseWriter, req *rest.Request) {
 	hostList := task.HostList{}
@@ -54,7 +58,11 @@ func (this *PyramidScheme) GetHostsHandler(w rest.ResponseWriter, req *rest.Requ
 // NextHosts handler
 func (this *PyramidScheme) PutNextHostsHandler(w rest.ResponseWriter, req *rest.Request) {
 	id, _ := strconv.Atoi(req.PathParam("id"))
-	if job, err := this.task.NextHosts(id); err == nil {
+	num, err := strconv.Atoi(req.PathParam("num"))
+	if err != nil {
+		num = 1
+	}
+	if job, err := this.task.NextHosts(id, num); err == nil {
 		w.WriteJson(&job)
 	} else {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -94,7 +102,8 @@ func main() {
 	handler.SetRoutes(
 		&rest.Route{"POST", "/jobs", ps.PostJobHandler},
 		&rest.Route{"GET", "/jobs/:id/hosts", ps.GetHostsHandler},
-		&rest.Route{"PUT", "/jobs/:id/nexthosts", ps.PutNextHostsHandler},
+		&rest.Route{"PUT", "/jobs/:id/nexthosts/:num", ps.PutNextHostsHandler},
+		&rest.Route{"PUT", "/jobs/:id/nexthost", ps.PutNextHostsHandler},
 		&rest.Route{"PUT", "/jobs/:id/updatehost/", ps.PutUpdateHostHandler},
 	)
 	log.Fatal(http.ListenAndServe(":8000", &handler))

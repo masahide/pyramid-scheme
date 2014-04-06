@@ -15,10 +15,6 @@ const (
 	Cancelled          // 5
 )
 
-const (
-	NextHostNum = 3 //
-)
-
 const name = "pyramid-scheme"
 
 type Host struct {
@@ -49,7 +45,7 @@ func (this *Task) GetHosts(id int) ([]Host, error) {
 	return this.jobs[id].Hosts, nil
 }
 
-func (this *Task) NextHosts(id int) ([]Host, error) {
+func (this *Task) NextHosts(id int, num int) ([]Host, error) {
 	if len(this.jobs) <= id {
 		return nil, errors.New(fmt.Sprintf("ID that does not exist. max id is %+v", len(this.jobs)))
 	}
@@ -58,7 +54,7 @@ func (this *Task) NextHosts(id int) ([]Host, error) {
 		if host.Status == Queued {
 			this.jobs[id].Hosts[index].Status = Initalizing
 			hosts = append(hosts, host)
-			if len(hosts) >= NextHostNum {
+			if len(hosts) >= num {
 				break
 			}
 		}

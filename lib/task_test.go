@@ -33,13 +33,13 @@ func TestNextHosts(t *testing.T) {
 	var hostList = HostList{"p_code", allHosts}
 	var task = Task{}
 	jobId := task.PostJob(&hostList)
-	result, _ := task.NextHosts(jobId)
+	result, _ := task.NextHosts(jobId, 3)
 
 	if result[0].Name != allHosts[0] {
 		t.Errorf("NextHosts(%v) = %+v, want %v", jobId, result, allHosts[0])
 	}
-	if len(result) != NextHostNum {
-		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), NextHostNum)
+	if len(result) != 3 {
+		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), 3)
 	}
 	hosts, _ := task.GetHosts(jobId)
 	i := 0
@@ -48,13 +48,13 @@ func TestNextHosts(t *testing.T) {
 			i++
 		}
 	}
-	if i != NextHostNum {
-		t.Errorf("i = %v, want %v", i, NextHostNum)
+	if i != 3 {
+		t.Errorf("i = %v, want %v", i, 3)
 		t.Errorf("hosts=%v", hosts)
 	}
 
-	result, _ = task.NextHosts(jobId)
-	result, _ = task.NextHosts(jobId)
+	result, _ = task.NextHosts(jobId, 3)
+	result, _ = task.NextHosts(jobId, 3)
 	if len(result) != 1 {
 		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), 1)
 	}
@@ -69,7 +69,7 @@ func TestNextHosts(t *testing.T) {
 		t.Errorf("i = %v, want %v", i, 7)
 		t.Errorf("hosts=%v", hosts)
 	}
-	result, _ = task.NextHosts(jobId)
+	result, _ = task.NextHosts(jobId, 3)
 	if len(result) != 0 {
 		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), 0)
 	}
@@ -81,7 +81,7 @@ func TestUpdateHosts(t *testing.T) {
 	var hostList = HostList{"p_code", allHosts}
 	var task = Task{}
 	jobId := task.PostJob(&hostList)
-	result, _ := task.NextHosts(jobId)
+	result, _ := task.NextHosts(jobId, 3)
 	result[0].Status = Finished
 	result[0].ReturnCode = 3
 	result[0].Message = "hoge"
