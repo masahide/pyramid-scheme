@@ -1,4 +1,4 @@
-package task
+package lib
 
 import (
 	"errors"
@@ -15,7 +15,6 @@ const (
 	Cancelled          // 5
 )
 
-const name = "pyramid-scheme"
 
 type Host struct {
 	Name       string
