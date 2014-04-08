@@ -81,6 +81,15 @@ func TestNextHosts(t *testing.T) {
 		t.Errorf("len(NextHosts(%v)) = %+v, want %v", jobId, len(result), 0)
 	}
 
+
+	errResult, err := task.NextHosts(jobId+1, 3)
+	if err == nil {
+		t.Errorf("GetHosts(jobId+1) err != nil")
+	}
+	if errResult != nil {
+		t.Errorf("GetHosts(jobId+1) return != nil")
+	}
+
 }
 
 func TestUpdateHosts(t *testing.T) {
@@ -101,5 +110,15 @@ func TestUpdateHosts(t *testing.T) {
 	if hosts[0].ReturnCode != 3 {
 		t.Errorf("GetHosts(%v) = %+v, want %v", jobId, hosts[0].ReturnCode, 3)
 		t.Errorf("hosts=%v", hosts)
+	}
+
+	err := task.UpdateHost(jobId+1, result[0])
+	if err == nil {
+		t.Errorf("GetHosts(jobId+1) err != nil")
+	}
+	result[0].Name = "abcdefg"
+	err = task.UpdateHost(jobId, result[0])
+	if err == nil {
+		t.Errorf("GetHosts(jobId+1) err != nil")
 	}
 }
