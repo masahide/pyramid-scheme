@@ -26,6 +26,13 @@ func TestGetHosts(t *testing.T) {
 	if result[0].Name != allHosts[0] {
 		t.Errorf("GetHosts(%v) = %+v, want %v", jobId, result, allHosts[0])
 	}
+	errResult, err := task.GetHosts(jobId+1)
+	if err == nil {
+		t.Errorf("GetHosts(jobId+1) err != nil")
+	}
+	if errResult != nil {
+		t.Errorf("GetHosts(jobId+1) return != nil")
+	}
 }
 
 func TestNextHosts(t *testing.T) {
